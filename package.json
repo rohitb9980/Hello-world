@@ -1,0 +1,13 @@
+{
+  "name": "hello-node-cicd",
+  "version": "1.0.0",
+  "description": "Hello World Node.js app for CI/CD",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
