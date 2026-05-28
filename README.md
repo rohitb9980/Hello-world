@@ -1,186 +1,315 @@
-# Sample CI/CD Project Overview
+# 🚀 Jenkins CI/CD with Minikube & Kubernetes
 
-This repository contains a sample Node.js application and a GitHub Actions CI/CD pipeline that builds, tests, containers, and deploys the app to Kubernetes.
+> A complete DevOps CI/CD project demonstrating automated deployment of a Node.js application to Kubernetes using Jenkins, Docker, and Minikube.
 
-The `check/` folder includes the app source, Dockerfile, Kubernetes manifests, and tests.
+<div align="center">
 
-## File structure under `check/`
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Jenkins](https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Minikube](https://img.shields.io/badge/Minikube-183A61?style=for-the-badge&logo=kubernetes&logoColor=white)
 
-- `check/app.js` - Express server application
-- `check/package.json` - Node project metadata and scripts
-- `check/Dockerfile` - Container image definition
-- `check/README.md` - Project documentation for the `check/` directory
-- `check/tsconfig.json` - TypeScript configuration file
-- `check/k8s/deployment.yml` - Kubernetes Deployment manifest
-- `check/k8s/service.yml` - Kubernetes Service manifest
-- `check/tests/app.test.ts` - Simple Node.js test file
+</div>
 
 ---
 
-## 1) `check/app.js`
+## 📑 Table of Contents
 
-This file defines a small Express server.
+- [✨ Features](#-features)
+- [🛠️ Tech Stack](#-tech-stack)
+- [📂 Project Structure](#-project-structure)
+- [⚙️ Local Setup](#-local-setup)
+- [🐳 Docker Setup](#-docker-setup)
+- [☸️ Kubernetes Deployment](#-kubernetes-deployment)
+- [⚡ Jenkins Pipeline](#-jenkins-pipeline)
+- [🏗️ Architecture](#-architecture)
+- [👨‍💻 Author](#-author)
 
-```js
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
+---
 
-app.get('/', (req, res) => {
-  res.send('Hello World from Kubernetes!');
-});
+## ✨ Features
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
-}
+| Feature | Description |
+|---------|-------------|
+| ✅ **Jenkins Pipeline** | Automated CI/CD pipeline with multi-stage deployment |
+| ✅ **Dockerized App** | Complete containerization of Node.js application |
+| ✅ **Kubernetes Deployment** | Full K8s manifests with Deployment & Service |
+| ✅ **Minikube Integration** | Local Kubernetes cluster setup & management |
+| ✅ **Self-Healing Pods** | ReplicaSets with automatic pod recovery |
+| ✅ **Docker Hub Integration** | Automated image pushing and pulling |
+| ✅ **Infrastructure as Code** | Complete IaC with YAML configurations |
 
-module.exports = app;
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|-----------|---------|
+| **Node.js** | Runtime environment for the application |
+| **Docker** | Container orchestration & image building |
+| **Jenkins** | CI/CD pipeline automation |
+| **Kubernetes** | Container orchestration platform |
+| **Minikube** | Local Kubernetes cluster |
+| **Docker Hub** | Container image registry |
+
+---
+
+## 📂 Project Structure
+
+```
+Hello-world/
+├── 📄 Jenkinsfile              # Jenkins pipeline configuration
+├── 📄 app.js                   # Node.js application
+├── 📄 Dockerfile               # Docker container specification
+├── 📄 package.json             # Node.js dependencies
+├── 📄 package-lock.json        # Dependency lock file
+├── 📄 README.md                # Project documentation
+└── 📁 k8s/                     # Kubernetes manifests
+    ├── deployment.yml          # Pod deployment configuration
+    └── service.yml             # Kubernetes service definition
 ```
 
-- `express` is loaded.
-- `app` is created as an Express instance.
-- The `/` route returns a greeting.
-- The server starts only when the file runs directly.
-- The app is exported for reusable testing.
-
 ---
 
-## 2) `check/package.json`
+## ⚙️ Local Setup
 
-This file describes the Node.js project and its dependencies.
+### 1️⃣ Clone Repository
 
-Key fields:
-
-- `name`, `version`, `description` — basic metadata.
-- `main: "app.js"` — entry point for the app.
-- `scripts`:
-  - `start`: runs `node app.js`
-  - `test`: runs Node’s built-in test runner
-- `dependencies`:
-  - `express`: runtime web server dependency
-
----
-
-## 3) `check/Dockerfile`
-
-This Dockerfile builds a container image for the app.
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 3000
-CMD ["npm", "start"]
+```bash
+git clone https://github.com/rohitb9980/Hello-world.git
+cd Hello-world
+git checkout Task2
 ```
 
-- Uses a lightweight Node.js Alpine image.
-- Copies package metadata and installs dependencies first.
-- Copies application files afterward.
-- Exposes port `3000`.
-- Starts the app with `npm start`.
+### 2️⃣ Install Dependencies
 
----
-
-## 4) `check/README.md`
-
-This file contains documentation for the sample repo, including the CI/CD workflow and Kubernetes deployment details.
-
-It explains how the repository demonstrates:
-
-- GitHub Actions automation
-- Docker image build
-- Kubernetes deployment using Kind (local cluster)
-
-It also lists common local commands such as:
-
-- `npm install`
-- `npm test`
-- `npm run build` (if present)
-- `npm run package` (if present)
-
----
-
-## 5) `check/tsconfig.json`
-
-TypeScript configuration for the project.
-
-Important settings include:
-
-- `target: "ES2020"` — modern JavaScript output
-- `module: "ESNext"` — ES module format
-- `moduleResolution: "node"` — Node import resolution
-- `types: ["node"]` — include Node.js type definitions
-
-Even though the main app file is JavaScript, this config makes the project compatible with TypeScript tooling.
-
----
-
-## 6) `check/k8s/deployment.yml`
-
-Kubernetes Deployment manifest for the app.
-
-Key configuration:
-
-- `apiVersion: apps/v1`
-- `kind: Deployment`
-- `metadata.name: hello-node-app`
-- `spec.replicas: 2`
-- `selector.matchLabels.app: hello-node-app`
-- `template.spec.containers[0].image: hello-node-app:latest`
-- `containerPort: 3000`
-
-This creates two pod replicas running the app image.
-
----
-
-## 7) `check/k8s/service.yml`
-
-Kubernetes Service manifest to expose the app.
-
-Key configuration:
-
-- `apiVersion: v1`
-- `kind: Service`
-- `metadata.name: hello-node-app-service`
-- `spec.type: NodePort`
-- `selector.app: hello-node-app`
-- `ports`:
-  - `port: 80`
-  - `targetPort: 3000`
-  - `nodePort: 30080`
-
-This exposes the app through Kubernetes node port `30080`.
-
----
-
-## 8) `check/tests/app.test.ts`
-
-A simple Node.js test using the built-in test runner.
-
-```js
-import { test } from 'node:test';
-import assert from 'node:assert';
-
-test('sample test', () => {
-  assert.strictEqual(1 + 1, 2);
-});
+```bash
+npm install
 ```
 
-- Uses Node’s built-in `node:test` framework.
-- Verifies a basic assertion.
-- Confirms the test system runs successfully.
+### 3️⃣ Run Application
+
+```bash
+npm start
+```
+
+📍 Application available at: **[http://localhost:3000](http://localhost:3000)**
+
+### 4️⃣ Run Tests
+
+```bash
+npm test
+```
 
 ---
 
-## Summary
+## 🐳 Docker Setup
 
-- `check/app.js` runs an Express server.
-- `check/Dockerfile` builds a container image.
-- `check/k8s/deployment.yml` deploys the app to Kubernetes.
-- `check/k8s/service.yml` exposes the deployment via NodePort.
-- `check/tests/app.test.ts` provides a simple validation test.
+### Build Docker Image
 
+```bash
+docker build -t hello-world-app:latest .
+```
+
+### Start Minikube
+
+```bash
+minikube start --driver=docker
+```
+
+### Load Image into Minikube
+
+```bash
+minikube image load hello-world-app:latest
+```
+
+---
+
+## ☸️ Kubernetes Deployment
+
+### Apply Manifests
+
+```bash
+# Deploy application
+kubectl apply -f k8s/deployment.yml
+
+# Create service
+kubectl apply -f k8s/service.yml
+```
+
+### Verify Deployment
+
+```bash
+# Check deployments
+kubectl get deployments
+
+# Check ReplicaSets
+kubectl get rs
+
+# List running pods
+kubectl get pods
+
+# List services
+kubectl get svc
+```
+
+### Access Application
+
+```bash
+# Open service in browser
+minikube service hello-world-app-service
+```
+
+---
+
+## 🔄 Self-Healing Demo
+
+Watch Kubernetes automatically recover pods:
+
+```bash
+# Watch pods in real-time
+kubectl get pods -w
+
+# Delete a pod (in another terminal)
+kubectl delete pod <pod-name>
+
+# Observe automatic recreation due to ReplicaSets (replicas: 2)
+```
+
+---
+
+## ⚡ Jenkins Pipeline
+
+The Jenkins pipeline automates the complete CI/CD workflow:
+
+```
+┌─────────────────┐
+│ GitHub Push     │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Checkout Code   │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Install Deps    │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Run Tests       │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Build Image     │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Push to Hub     │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Deploy to K8s   │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ Verify Deploy   │
+└─────────────────┘
+```
+
+### Pipeline Stages
+
+| Stage | Action |
+|-------|--------|
+| 📌 **Checkout** | Fetch source code from GitHub |
+| 📦 **Install** | Install Node.js dependencies |
+| 🧪 **Test** | Run unit tests |
+| 🏗️ **Build** | Create Docker image |
+| 📤 **Push** | Push image to Docker Hub |
+| 📥 **Load** | Load image into Minikube |
+| 🚀 **Deploy** | Deploy to Kubernetes cluster |
+| ✔️ **Verify** | Validate deployment health |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                     GitHub Repository                        │
+│                   (Source Code + Trigger)                    │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+                            ↓
+┌──────────────────────────────────────────────────────────────┐
+│                    Jenkins Pipeline                          │
+│            (Build, Test, Package, Deploy)                    │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+                            ↓
+┌──────────────────────────────────────────────────────────────┐
+│                   Docker Registry                            │
+│                  (Docker Hub Storage)                        │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+                            ↓
+┌──────────────────────────────────────────────────────────────┐
+│              Minikube Kubernetes Cluster                      │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │  Deployment (hello-world-app)                          │ │
+│  │  ┌──────────────┐    ┌──────────────┐                 │ │
+│  │  │   Pod #1     │    │   Pod #2     │ (ReplicaSet=2) │ │
+│  │  └──────────────┘    └──────────────┘                 │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │  Service (NodePort:30000)                              │ │
+│  │         ↓                                               │ │
+│  │  External Access (localhost:30000)                     │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📸 Demo Highlights
+
+```
+🎯 Key Features in Action:
+
+✅ Jenkins automated deployment on every push
+✅ Kubernetes self-healing with pod recreation
+✅ ReplicaSets maintaining high availability (2 replicas)
+✅ Minikube local Kubernetes cluster
+✅ Dockerized deployment workflow with zero downtime
+✅ Complete infrastructure as code (IaC)
+```
+
+---
+
+## 👨‍💻 Author
+
+<div align="center">
+
+**Rohit Bondre**
+
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rohitb9980)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/rohitbondre)
+
+*DevOps Engineer | Cloud Native Enthusiast | Container Orchestration Specialist*
+
+</div>
+
+---
+
+<div align="center">
+
+⭐ If you found this project helpful, please consider giving it a star!
+
+</div>
