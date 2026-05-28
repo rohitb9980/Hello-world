@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        IMAGE_REPO = "rohitbondre1309/hello-world-app"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
+    }
 
+    stages {
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -21,48 +25,62 @@ pipeline {
             }
         }
 
-        stage('Start Minikube') {
+        stage('Build Docker Image') {
             steps {
-                 bat 'minikube start --driver=docker'
+                bat 'docker build -t %IMAGE_REPO%:%IMAGE_TAG% .'
+                bat 'docker tag %IMAGE_REPO%:%IMAGE_TAG% %IMAGE_REPO%:latest'
             }
         }
 
-        stage('Load Docker Image into Minikube') {
+        stage('Login to Docker Hub') {
             steps {
-                bat 'minikube image load rohitbondre1309/hello-world-app:fadb3eceeaf78a42da0e3f3e3dfa943a50405ddc'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                    bat 'echo %DOCKER_TOKEN% | docker login -u %DOCKER_USERNAME% --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                bat 'docker push %IMAGE_REPO%:%IMAGE_TAG%'
+                bat 'docker push %IMAGE_REPO%:latest'
+            }
+        }
+
+        stage('Load Image into Minikube') {
+            steps {
+                bat 'minikube image load %IMAGE_REPO%:%IMAGE_TAG%'
+                bat 'minikube image load %IMAGE_REPO%:latest'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-
                 bat 'kubectl apply -f k8s/deployment.yml'
                 bat 'kubectl apply -f k8s/service.yml'
-
+                bat 'kubectl set image deployment/hello-world-app hello-world-app=%IMAGE_REPO%:%IMAGE_TAG%'
                 bat 'kubectl rollout status deployment/hello-world-app --timeout=120s'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-
                 bat 'kubectl get deployments'
-
                 bat 'kubectl get rs'
-
                 bat 'kubectl get pods'
-
                 bat 'kubectl get svc'
             }
         }
     }
 
     post {
-
         success {
             echo 'Deployment Successful!'
         }
-
         failure {
             echo 'Deployment Failed!'
         }
