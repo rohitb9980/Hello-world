@@ -27,8 +27,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                powershell "docker build -t $env:IMAGE_REPO:$env:IMAGE_TAG ."
-                powershell "docker tag $env:IMAGE_REPO:$env:IMAGE_TAG $env:IMAGE_REPO:latest"
+                powershell 'docker build -t ${env:IMAGE_REPO}:${env:IMAGE_TAG} .'
+                powershell 'docker tag ${env:IMAGE_REPO}:${env:IMAGE_TAG} ${env:IMAGE_REPO}:latest'
             }
         }
 
@@ -39,22 +39,22 @@ pipeline {
                     usernameVariable: 'DOCKER_USERNAME',
                     passwordVariable: 'DOCKER_TOKEN'
                 )]) {
-                    powershell 'docker login -u $env:DOCKER_USERNAME -p $env:DOCKER_TOKEN'
+                    powershell 'docker login -u ${env:DOCKER_USERNAME} -p ${env:DOCKER_TOKEN}'
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                powershell "docker push $env:IMAGE_REPO:$env:IMAGE_TAG"
-                powershell "docker push $env:IMAGE_REPO:latest"
+                powershell 'docker push ${env:IMAGE_REPO}:${env:IMAGE_TAG}'
+                powershell 'docker push ${env:IMAGE_REPO}:latest'
             }
         }
 
         stage('Load Image into Minikube') {
             steps {
-                powershell "minikube image load $env:IMAGE_REPO:$env:IMAGE_TAG"
-                powershell "minikube image load $env:IMAGE_REPO:latest"
+                powershell 'minikube image load ${env:IMAGE_REPO}:${env:IMAGE_TAG}'
+                powershell 'minikube image load ${env:IMAGE_REPO}:latest'
             }
         }
 
@@ -62,7 +62,7 @@ pipeline {
             steps {
                 powershell 'kubectl apply -f k8s/deployment.yml'
                 powershell 'kubectl apply -f k8s/service.yml'
-                powershell "kubectl set image deployment/hello-world-app hello-world-app=$env:IMAGE_REPO:$env:IMAGE_TAG"
+                powershell 'kubectl set image deployment/hello-world-app hello-world-app=${env:IMAGE_REPO}:${env:IMAGE_TAG}'
                 powershell 'kubectl rollout status deployment/hello-world-app --timeout=120s'
             }
         }
@@ -75,3 +75,12 @@ pipeline {
         }
     }
 }
+
+    post {
+        success {
+            echo 'Deployment Successful!'
+        }
+        failure {
+            echo 'Deployment Failed!'
+        }
+    }
