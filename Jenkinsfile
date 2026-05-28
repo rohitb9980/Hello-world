@@ -33,16 +33,17 @@ pipeline {
         }
 
         stage('Login to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_TOKEN'
-                )]) {
-                    bat 'echo %DOCKER_TOKEN% | docker login -u %DOCKER_USERNAME% --password-stdin'
-                }
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USERNAME',
+            passwordVariable: 'DOCKER_TOKEN'
+        )]) {
+            bat 'docker login -u %DOCKER_USERNAME% -p %DOCKER_TOKEN%'
+            }
             }
         }
+
 
         stage('Push Docker Image') {
             steps {
