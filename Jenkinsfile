@@ -8,7 +8,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -27,16 +26,11 @@ pipeline {
             }
         }
 
-        stage('Start Minikube') {
-            steps {
-                powershell 'minikube start --driver=docker'
-            }
-        }
-
+        
         stage('Build Docker Image') {
             steps {
                 powershell '''
-                    docker build -t "${env:IMAGE_REPO}:${env:IMAGE_TAG}" .
+                    docker build -t ${env:IMAGE_REPO}:${env:IMAGE_TAG} .
                 '''
             }
         }
@@ -48,11 +42,8 @@ pipeline {
                     usernameVariable: 'DOCKER_USERNAME',
                     passwordVariable: 'DOCKER_TOKEN'
                 )]) {
-
                     powershell '''
-                        $env:DOCKER_TOKEN | docker login `
-                        -u $env:DOCKER_USERNAME `
-                        --password-stdin
+                        Write-Output $env:DOCKER_TOKEN | docker login -u $env:DOCKER_USERNAME --password-stdin
                     '''
                 }
             }
@@ -61,7 +52,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 powershell '''
-                    docker push "${env:IMAGE_REPO}:${env:IMAGE_TAG}"
+                    docker push ${env:IMAGE_REPO}:${env:IMAGE_TAG}
                 '''
             }
         }
@@ -69,8 +60,8 @@ pipeline {
         stage('Load Image into Minikube') {
             steps {
                 powershell '''
-                    minikube image load $env:IMAGE_REPO:$env:IMAGE_TAG
-                    minikube image load $env:IMAGE_REPO:latest
+                    minikube image load ${env:IMAGE_REPO}:${env:IMAGE_TAG}
+                    minikube image load ${env:IMAGE_REPO}:latest
                 '''
             }
         }
@@ -91,8 +82,7 @@ pipeline {
                     kubectl apply -f k8s/deployment.yml
                     kubectl apply -f k8s/service.yml
 
-                    kubectl set image deployment/hello-world-app `
-                    hello-world-app=$env:IMAGE_REPO:$env:IMAGE_TAG
+                    kubectl set image deployment/hello-world-app hello-world-app=${env:IMAGE_REPO}:${env:IMAGE_TAG}
 
                     kubectl rollout status deployment/hello-world-app --timeout=120s
                 '''
@@ -112,11 +102,9 @@ pipeline {
     }
 
     post {
-
         success {
             echo 'Deployment Successful!'
         }
-
         failure {
             echo 'Deployment Failed!'
         }
