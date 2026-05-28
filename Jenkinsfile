@@ -36,8 +36,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 powershell '''
-                    docker build -t $env:IMAGE_REPO:$env:IMAGE_TAG .
-                    docker tag $env:IMAGE_REPO:$env:IMAGE_TAG $env:IMAGE_REPO:latest
+                    docker build -t "${env:IMAGE_REPO}:${env:IMAGE_TAG}" .
                 '''
             }
         }
@@ -62,8 +61,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 powershell '''
-                    docker push $env:IMAGE_REPO:$env:IMAGE_TAG
-                    docker push $env:IMAGE_REPO:latest
+                    docker push "${env:IMAGE_REPO}:${env:IMAGE_TAG}"
                 '''
             }
         }
