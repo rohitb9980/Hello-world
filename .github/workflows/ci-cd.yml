@@ -8,7 +8,7 @@ on:
 
 env:
   APP_NAME: hello-world-app
-  IMAGE_NAME: rohitbondre1309/hello-world-app
+  IMAGE_NAME: hello-world-app
   IMAGE_TAG: ${{ github.sha }}
   K8S_CLUSTER_NAME: hello-world-cluster
 
@@ -147,7 +147,7 @@ jobs:
       - name: Load Docker image into kind
         run: |
           docker load -i image.tar
-          kind load docker-image ${IMAGE_NAME}:${IMAGE_TAG} --name ${K8S_CLUSTER_NAME}
+          kind load docker-image ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} --name ${K8S_CLUSTER_NAME}
 
       - name: Deploy to Kubernetes
         run: |
