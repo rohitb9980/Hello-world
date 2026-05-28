@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_REPO = "rohitbondre1309/hello-world-app"
-        IMAGE_TAG  = "${BUILD_NUMBER}"
+        IMAGE_REPO  = "rohitbondre1309/hello-world-app"
+        IMAGE_TAG   = "${BUILD_NUMBER}"
+        KUBECONFIG  = "C:\\Users\\'Rohit Bondre'\\.kube\\config"
     }
 
     stages {
@@ -60,8 +61,9 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                powershell 'kubectl apply -f k8s/deployment.yml'
-                powershell 'kubectl apply -f k8s/service.yml'
+                powershell 'kubectl config use-context minikube'
+                powershell 'kubectl apply -f k8s/deployment.yml --validate=false'
+                powershell 'kubectl apply -f k8s/service.yml --validate=false'
                 powershell 'kubectl set image deployment/hello-world-app hello-world-app=${env:IMAGE_REPO}:${env:IMAGE_TAG}'
                 powershell 'kubectl rollout status deployment/hello-world-app --timeout=120s'
             }
@@ -74,7 +76,6 @@ pipeline {
             }
         }
     }
-}
 
     post {
         success {
@@ -84,3 +85,4 @@ pipeline {
             echo 'Deployment Failed!'
         }
     }
+}
