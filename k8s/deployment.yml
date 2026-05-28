@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-node-app
+  name: hello-world-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: hello-node-app
+      app: hello-world-app
   template:
     metadata:
       labels:
-        app: hello-node-app
+        app: hello-world-app
     spec:
       containers:
-        - name: hello-node-app
-          image: hello-node-app:latest
+        - name: hello-world-app
+          image: rohitbondre1309/hello-world-app:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
