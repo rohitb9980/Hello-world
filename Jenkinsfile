@@ -69,20 +69,9 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                bat 'kubectl get deployments'
-                bat 'kubectl get rs'
                 bat 'kubectl get pods'
-                bat 'kubectl get svc'
+                bat 'kubectl get services'
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment Successful!'
-        }
-        failure {
-            echo 'Deployment Failed!'
         }
     }
 }
