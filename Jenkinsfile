@@ -21,6 +21,12 @@ pipeline {
             }
         }
 
+        stage('Start Minikube') {
+            steps {
+                 bat 'minikube start --driver=docker'
+            }
+        }
+
         stage('Load Docker Image into Minikube') {
             steps {
                 bat 'minikube image load rohitbondre1309/hello-world-app:fadb3eceeaf78a42da0e3f3e3dfa943a50405ddc'
