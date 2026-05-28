@@ -15,6 +15,6 @@ spec:
       containers:
         - name: hello-world-app
           image: rohitbondre1309/hello-world-app:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
