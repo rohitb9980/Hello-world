@@ -22,6 +22,7 @@
 - [⚙️ Local Setup](#-local-setup)
 - [🐳 Docker Setup](#-docker-setup)
 - [☸️ Kubernetes Deployment](#-kubernetes-deployment)
+- [📦 Helm Deployment](#-helm-deployment)
 - [⚡ Jenkins Pipeline](#-jenkins-pipeline)
 - [🏗️ Architecture](#-architecture)
 - [👨‍💻 Author](#-author)
@@ -59,15 +60,25 @@
 
 ```
 Hello-world/
-├── 📄 Jenkinsfile              # Jenkins pipeline configuration
-├── 📄 app.js                   # Node.js application
-├── 📄 Dockerfile               # Docker container specification
-├── 📄 package.json             # Node.js dependencies
-├── 📄 package-lock.json        # Dependency lock file
-├── 📄 README.md                # Project documentation
-└── 📁 k8s/                     # Kubernetes manifests
-    ├── deployment.yml          # Pod deployment configuration
-    └── service.yml             # Kubernetes service definition
+├── 📄 Jenkinsfile                # Jenkins pipeline configuration
+├── 📄 app.js                     # Node.js application
+├── 📄 Dockerfile                 # Docker container specification
+├── 📄 package.json               # Node.js dependencies
+├── 📄 package-lock.json          # Dependency lock file
+├── 📄 README.md                  # Project documentation
+├── 📁 k8s/                       # Kubernetes manifests
+│   ├── deployment.yml            # Pod deployment configuration
+│   └── service.yml               # Kubernetes service definition
+└── 📁 Helm/                      # Helm chart for application
+    └── Hello-world-app/
+        ├── Chart.yaml            # Helm chart metadata
+        ├── values.yml            # Default values
+        ├── values-dev.yml        # Development environment values
+        ├── values-qa.yml         # QA environment values
+        ├── values-prod.yml       # Production environment values
+        └── templates/
+            ├── deployment.yml    # Kubernetes deployment template
+            └── service.yml       # Kubernetes service template
 ```
 
 ---
@@ -163,7 +174,93 @@ minikube service hello-world-app-service
 
 ---
 
-## 🔄 Self-Healing Demo
+## � Helm Deployment
+
+### Helm Chart Overview
+
+The Helm chart (`hello-world-app`) provides a templated approach to Kubernetes deployments with environment-specific configurations.
+
+**Chart Details:**
+- **Name:** hello-world-app
+- **Version:** 0.1.0
+- **App Version:** 1.16.0
+- **Type:** Application
+
+### Environment Configurations
+
+| Environment | Replicas | Image Tag | NodePort | Use Case |
+|-------------|----------|-----------|----------|----------|
+| **Development** | 1 | 14 | 30081 | Local development & testing |
+| **QA** | 1 | 14 | 30082 | Quality assurance & staging |
+| **Production** | 3 | 14 | 30080 | Production deployment |
+| **Default** | 2 | latest | 30080 | Default configuration |
+
+### Install Helm Chart
+
+#### Default Installation
+
+```bash
+helm install hello-world ./Helm/Hello-world-app
+```
+
+#### Environment-Specific Installation
+
+**Development:**
+```bash
+helm install hello-world ./Helm/Hello-world-app -f ./Helm/Hello-world-app/values-dev.yml
+```
+
+**QA:**
+```bash
+helm install hello-world ./Helm/Hello-world-app -f ./Helm/Hello-world-app/values-qa.yml
+```
+
+**Production:**
+```bash
+helm install hello-world ./Helm/Hello-world-app -f ./Helm/Hello-world-app/values-prod.yml
+```
+
+### Helm Values Configuration
+
+**Default Values (`values.yml`):**
+```yaml
+replicaCount: 2
+image:
+  repository: rohitbondre1309/hello-world-app
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  port: 80
+  targetPort: 3000
+  nodePort: 30080
+```
+
+### Common Helm Commands
+
+```bash
+# Verify chart
+helm lint ./Helm/Hello-world-app
+
+# Dry-run deployment
+helm install --dry-run --debug hello-world ./Helm/Hello-world-app
+
+# List releases
+helm list
+
+# Get release values
+helm get values hello-world
+
+# Upgrade release
+helm upgrade hello-world ./Helm/Hello-world-app -f values-prod.yml
+
+# Uninstall release
+helm uninstall hello-world
+```
+
+---
+
+## �🔄 Self-Healing Demo
 
 Watch Kubernetes automatically recover pods:
 
