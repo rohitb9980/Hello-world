@@ -1,22 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hello-world-app.fullname" . }}
-  labels:
-    {{- include "hello-world-app.labels" . | nindent 4 }}
+  name: hello-world-app
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "hello-world-app.name" . }}
+      app: hello-world-app
   template:
     metadata:
       labels:
-        app: {{ include "hello-world-app.name" . }}
+        app: hello-world-app
     spec:
       containers:
-        - name: {{ include "hello-world-app.name" . }}
+        - name: hello-world-app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.targetPort }}
+            - containerPort: {{ .Values.containerPort }}
