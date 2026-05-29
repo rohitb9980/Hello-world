@@ -1,7 +1,14 @@
 replicaCount: 3
 
+containerPort: 3000
+
 image:
-  tag: latest
+  repository: rohitbondre1309/hello-world-app
+  tag: prod
+  pullPolicy: IfNotPresent
 
 service:
+  type: NodePort
+  port: 80
+  targetPort: 3000
   nodePort: 30080
