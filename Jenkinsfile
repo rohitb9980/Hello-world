@@ -4,7 +4,6 @@ pipeline {
     environment {
         IMAGE_REPO = "rohitbondre1309/hello-world-app"
         IMAGE_TAG  = "${BUILD_NUMBER}"
-        KUBECONFIG = "C:\\Users\\Rohit Bondre\\.kube\\config"
     }
 
     stages {
@@ -16,22 +15,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                powershell 'npm install'
+                sh 'npm install'
             }
         }
 
         stage('Run Tests') {
             steps {
-                powershell 'npm test'
+                sh 'npm test'
             }
         }
 
-        
         stage('Build Docker Image') {
             steps {
-                powershell '''
-                    docker build -t ${env:IMAGE_REPO}:${env:IMAGE_TAG} .
-                '''
+                sh 'docker build -t $IMAGE_REPO:$IMAGE_TAG .'
             }
         }
 
@@ -42,62 +38,36 @@ pipeline {
                     usernameVariable: 'DOCKER_USERNAME',
                     passwordVariable: 'DOCKER_TOKEN'
                 )]) {
-                    powershell '''
-                        docker login -u $env:DOCKER_USERNAME -p $env:DOCKER_TOKEN
-                    '''
+                    sh 'echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                 }
             }
         }
 
-
         stage('Push Docker Image') {
             steps {
-                powershell '''
-                    docker push ${env:IMAGE_REPO}:${env:IMAGE_TAG}
-                '''
+                sh 'docker push $IMAGE_REPO:$IMAGE_TAG'
             }
         }
 
         stage('Load Image into Minikube') {
             steps {
-                powershell '''
-                    minikube image load ${env:IMAGE_REPO}:${env:IMAGE_TAG}
-                    minikube image load ${env:IMAGE_REPO}:latest
-                '''
-            }
-        }
-
-        stage('Verify Kubernetes Context') {
-            steps {
-                powershell '''
-                    minikube update-context
-                    kubectl config current-context
-                    kubectl cluster-info
-                '''
+                sh 'minikube image load $IMAGE_REPO:$IMAGE_TAG'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                powershell '''
-                    kubectl apply -f k8s/deployment.yml
-                    kubectl apply -f k8s/service.yml
-
-                    kubectl set image deployment/hello-world-app hello-world-app=${env:IMAGE_REPO}:${env:IMAGE_TAG}
-
-                    kubectl rollout status deployment/hello-world-app --timeout=120s
-                '''
+                sh 'kubectl apply -f k8s/deployment.yml'
+                sh 'kubectl apply -f k8s/service.yml'
+                sh 'kubectl set image deployment/hello-world-app hello-world-app=$IMAGE_REPO:$IMAGE_TAG'
+                sh 'kubectl rollout status deployment/hello-world-app --timeout=120s'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                powershell '''
-                    kubectl get deployments
-                    kubectl get rs
-                    kubectl get pods
-                    kubectl get svc
-                '''
+                sh 'kubectl get pods'
+                sh 'kubectl get svc'
             }
         }
     }
