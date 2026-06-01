@@ -6,19 +6,21 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
-    - name: kubectl
-      image: bitnami/kubectl:latest
-      command: ['cat']
-      tty: true
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - sleep
+    args:
+    - 99d
 '''
         }
     }
 
     stages {
-        stage('Check kubectl') {
+        stage('Test') {
             steps {
                 container('kubectl') {
-                    sh 'kubectl version --client'
+                    sh 'echo hello'
                 }
             }
         }
