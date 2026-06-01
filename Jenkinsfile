@@ -1,25 +1,25 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: kubectl
+      image: bitnami/kubectl:latest
+      command: ['cat']
+      tty: true
+'''
+        }
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Check kubectl') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'kubectl apply -f k8s/deployment.yml'
-                sh 'kubectl apply -f k8s/service.yml'
-                sh 'kubectl rollout status deployment/hello-world-app --timeout=120s'
-            }
-        }
-
-        stage('Verify') {
-            steps {
-                sh 'kubectl get pods'
-                sh 'kubectl get svc'
+                container('kubectl') {
+                    sh 'kubectl version --client'
+                }
             }
         }
     }
